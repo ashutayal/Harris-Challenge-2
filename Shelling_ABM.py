@@ -31,13 +31,48 @@ class Agent():
     #An agent needs to know if it is happy, needs to be able to move (find a vacancy and fill
     # it), can either check if it'll be happy in the new location, or not and
     # needs to report to World what it did
-        def __init__(self, world, kind, same_pref):
+    def __init__(self, world, kind, same_pref):
         self.world = world
         self.kind = kind
         self.same_pref = same_pref
         self.location = None
     
     def move(self): 
+        
+        if self.am_i_happy():
+            # happy agent
+            if self.kind == 'red':
+                # happy red agent not moved
+                return 0
+            elif self.kind == 'blue':
+                # happy blue agent not moved
+                return 1
+            else:
+                pass
+            
+        elif len(self.world.find_vacant(return_all = True)) == 0 and not self.am_i_happy():
+                # unhappy agent & no empty spots
+            if self.kind == 'red':
+                # unhappy red agent not moved
+                return 2
+            elif self.kind == 'blue':
+                # unhappy blue agent not moved
+                return 3
+            
+        else:
+            # executed only if some empty spots
+            if self.kind == 'blue':
+                self.location = self.world.find_vacant()
+                return 5
+                # unhappy blue agent moved
+            elif self.kind == 'red':
+                self.location = self.world.find_vacant()
+                return 4
+                # unhappy red agent moved
+            else:
+                pass
+                
+                
         #moves an agent
         #agent has to know if it is happy to decide if it'll move 
         #agent has to be able to find vacancies (use self.world.find_vacant(...))
@@ -51,9 +86,37 @@ class Agent():
         #return 0 # red happy, did not move
         #return 1 # blue happy, did not move
 
-        pass
+        
 
     def am_i_happy(self, loc=False, neighbor_check=False):
+        # happiness check for default location (current location)
+        if loc == False:
+            neighbor_locs = self.world.locate_neighbors(self.location)
+        else:
+            neighbor_locs = self.world.locate_neighbors(loc)
+            # neighbor_locs contains empty spots too
+            # retaining neighbors only if non empty spot
+        occupant_types = [occupant for loc, occupant in self.world.grid.items() if loc in neighbor_locs]
+        neighbor_locs = [neighbor_locs[i] for i in neighbor_locs if ]    
+        
+        # list for all agents that are neighbors
+        list_all_neighbors = [occupant for loc, occupant in self.world.grid.items() if loc in neighbor_locs]
+        like_neighbour_count = len([occupant for occupant in list_all_neighbors if self.kind == occupant.kind ])
+        # like_neighbour_count = len([loc for loc,occupant in range(len(neighbor_kinds)) if self.kind == self.world.grid[neighbor_kinds[i]].kind])
+        if len(list_all_neighbors) == 0:
+            return False
+        elif like_neighbour_count/len(list_all_neighbors) < self.same_pref:
+            return False
+        else:
+            return True
+        
+            #     for agent in self.agents:
+            # loc = self.find_vacant()
+            # self.grid[loc] = agent
+            # agent.location = loc
+ 
+                 # empties = [loc for loc, occupant in self.grid.items() if occupant is None]
+        
         #this should return a boolean for whether or not an agent is happy at a location
         #if loc is False, use current location, else use specified location
         #for reporting purposes, allow checking of the current number of similar neighbors
@@ -61,7 +124,7 @@ class Agent():
         #if an agent is in a patch with no neighbors at all, treat it as unhappy
         #if len(neighbor_kinds) == 0:
         #    return False
-        pass
+
     
     def start_happy_r_b(self):
     #for reporting purposes, allow count of happy before any moves, of red and blue seperately
