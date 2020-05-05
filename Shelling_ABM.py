@@ -29,7 +29,7 @@ params = {'world_size':(20,20),
 
 class Agent():
     #An agent needs to know if it is happy, needs to be able to move (find a vacancy and fill
-    # it), can either check if it'll be happy in the new location, or not and
+    # it), can either check if it'll be happy in the new location, or not and (Doubt!)
     # needs to report to World what it did
     def __init__(self, world, kind, same_pref):
         self.world = world
@@ -62,15 +62,15 @@ class Agent():
         else:
             # executed only if atleast one empty spot
             if self.kind == 'blue':
-                while not self.am_i_happy:
+                # while not self.am_i_happy:
                     # moves agent location till agent is happy
                     self.location = self.world.find_vacant()
-                return 5
+                    return 5
                 # unhappy blue agent moved
             elif self.kind == 'red':
-                while not self.am_i_happy:
+                # while not self.am_i_happy:
                     self.location = self.world.find_vacant()
-                return 4
+                    return 4
                 # unhappy red agent moved
             else:
                 pass
@@ -106,9 +106,10 @@ class Agent():
         # list_all_neighbors contains a list of non-vacant spots around the agent
         like_neighbor_count = len([occupant for occupant in list_all_neighbors if self.kind == occupant.kind ])
         # like_neighbor_count counts total like neighbors for the agent
+        
         if len(list_all_neighbors) == 0:
             return False # Agent with no neighbors is unhappy
-        elif like_neighbor_count/len(list_all_neighbors) < self.same_pref:
+        elif float(like_neighbor_count/len(list_all_neighbors)) < self.same_pref:
             return False
         else:
             return True
@@ -119,7 +120,7 @@ class Agent():
         
         #this should return a boolean for whether or not an agent is happy at a location
         #if loc is False, use current location, else use specified location
-        #for reporting purposes, allow checking of the current number of similar neighbors
+    #for reporting purposes, allow checking of the current number of similar neighbors ?? Doubt
 
         #if an agent is in a patch with no neighbors at all, treat it as unhappy
         #if len(neighbor_kinds) == 0:
@@ -233,29 +234,29 @@ class World():
         neighbors = [_edge_fixer(loc) for loc in neighbors]
         return neighbors
 
-    def report_integration(self):
-        diff_neighbors = []
-        diff_neighbours_r = []
-        diff_neighbours_b = []
-        for agent in self.agents:
-            diff_neighbors.append(sum(
-                    [not a for a in agent.am_i_happy(neighbor_check=True)]
-                                ))
-        for agent in self.agents:
-            if agent.kind == 'red':
-                diff_neighbours_r.append(sum(
-                    [not a for a in agent.am_i_happy(neighbor_check=True)]
-                                ))
-        for agent in self.agents:
-            if agent.kind == 'blue':
-                diff_neighbours_b.append(sum(
-                    [not a for a in agent.am_i_happy(neighbor_check=True)]
-                                ))
+    # def report_integration(self):
+    #     diff_neighbors = []
+    #     diff_neighbours_r = []
+    #     diff_neighbours_b = []
+    #     for agent in self.agents:
+    #         diff_neighbors.append(sum(
+    #                 [not a for a in agent.am_i_happy(neighbor_check=True)]
+    #                             ))
+    #     for agent in self.agents:
+    #         if agent.kind == 'red':
+    #             diff_neighbours_r.append(sum(
+    #                 [not a for a in agent.am_i_happy(neighbor_check=True)]
+    #                             ))
+    #     for agent in self.agents:
+    #         if agent.kind == 'blue':
+    #             diff_neighbours_b.append(sum(
+    #                 [not a for a in agent.am_i_happy(neighbor_check=True)]
+    #                             ))
                 
 
-        self.reports['integration'].append(round(mean(diff_neighbors), 2))
-        self.reports['red_integration'].append(round(mean(diff_neighbours_r), 2))
-        self.reports['blue_integration'].append(round(mean(diff_neighbours_b), 2))
+    #     self.reports['integration'].append(round(mean(diff_neighbors), 2))
+    #     self.reports['red_integration'].append(round(mean(diff_neighbours_r), 2))
+    #     self.reports['blue_integration'].append(round(mean(diff_neighbours_b), 2))
 
 
     def run(self): 
@@ -270,7 +271,7 @@ class World():
         log_of_stay_r = []
         log_of_stay_b = []
 
-        self.report_integration()
+        # self.report_integration() #commented
         log_of_happy.append(sum([a.am_i_happy() for a in self.agents])) #starting happiness
         
         happy_results = [agent.start_happy_r_b() for agent in self.agents]
@@ -288,7 +289,7 @@ class World():
             random.shuffle(self.agents) #randomize agents before every iteration
             move_results = [agent.move() for agent in self.agents]
             
-            self.report_integration()
+            # self.report_integration() #commented
 
             num_happy_at_start   =sum([r==0 for r in move_results]) + sum([r==1 for r in move_results])
             num_happy_at_start_r = sum([r==0 for r in move_results])
@@ -358,23 +359,23 @@ world = World(params)
 world.run()
 
 
-'''
-sample output
-Everyone is happy!  Stopping after iteration 5.
+# '''
+# sample output
+# Everyone is happy!  Stopping after iteration 5.
 
-All results begin at time=0 and go in order to the end.
+# All results begin at time=0 and go in order to the end.
 
-The average number of neighbors an agent has not like them: [3.67, 1.84, 1.44, 1.37, 1.33, 1.31, 1.31]
-The average number of neighbors a red agent has not like them: [3.06, 1.53, 1.2, 1.14, 1.11, 1.09, 1.09]
-The average number of neighbors a blue agent has not like them: [4.59, 2.3, 1.8, 1.71, 1.66, 1.64, 1.64]
-The number of happy agents: [297, 291, 361, 377, 378, 379, 380]
-The number of happy red agents: [228, 184, 217, 227, 228, 228, 228]
-The number of happy blue agents: [152, 107, 144, 150, 150, 151, 152]
-The number of red agent moves per turn: [0, 44, 11, 1, 0, 0, 0]
-The number of blue agent moves per turn: [0, 45, 8, 2, 2, 1, 0]
-The number of red agents who failed to find a new home: [0, 0, 0, 0, 0, 0, 0]
-The number of blue agents who failed to find a new home: [0, 0, 0, 0, 0, 0, 0]
-'''
+# The average number of neighbors an agent has not like them: [3.67, 1.84, 1.44, 1.37, 1.33, 1.31, 1.31]
+# The average number of neighbors a red agent has not like them: [3.06, 1.53, 1.2, 1.14, 1.11, 1.09, 1.09]
+# The average number of neighbors a blue agent has not like them: [4.59, 2.3, 1.8, 1.71, 1.66, 1.64, 1.64]
+# The number of happy agents: [297, 291, 361, 377, 378, 379, 380]
+# The number of happy red agents: [228, 184, 217, 227, 228, 228, 228]
+# The number of happy blue agents: [152, 107, 144, 150, 150, 151, 152]
+# The number of red agent moves per turn: [0, 44, 11, 1, 0, 0, 0]
+# The number of blue agent moves per turn: [0, 45, 8, 2, 2, 1, 0]
+# The number of red agents who failed to find a new home: [0, 0, 0, 0, 0, 0, 0]
+# The number of blue agents who failed to find a new home: [0, 0, 0, 0, 0, 0, 0]
+# '''
 
 
 
