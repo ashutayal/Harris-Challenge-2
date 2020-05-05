@@ -60,13 +60,16 @@ class Agent():
                 return 3
             
         else:
-            # executed only if some empty spots
+            # executed only if atleast one empty spot
             if self.kind == 'blue':
-                self.location = self.world.find_vacant()
+                while not self.am_i_happy:
+                    # moves agent location till agent is happy
+                    self.location = self.world.find_vacant()
                 return 5
                 # unhappy blue agent moved
             elif self.kind == 'red':
-                self.location = self.world.find_vacant()
+                while not self.am_i_happy:
+                    self.location = self.world.find_vacant()
                 return 4
                 # unhappy red agent moved
             else:
@@ -89,33 +92,30 @@ class Agent():
         
 
     def am_i_happy(self, loc=False, neighbor_check=False):
-        # happiness check for default location (current location)
+        
         if loc == False:
+            # happiness check for default location (current location)
             neighbor_locs = self.world.locate_neighbors(self.location)
         else:
+            # happiness check for specified location
             neighbor_locs = self.world.locate_neighbors(loc)
+            
             # neighbor_locs contains empty spots too
-            # retaining neighbors only if non empty spot
-        occupant_types = [occupant for loc, occupant in self.world.grid.items() if loc in neighbor_locs]
-        neighbor_locs = [neighbor_locs[i] for i in neighbor_locs if ]    
-        
-        # list for all agents that are neighbors
-        list_all_neighbors = [occupant for loc, occupant in self.world.grid.items() if loc in neighbor_locs]
-        like_neighbour_count = len([occupant for occupant in list_all_neighbors if self.kind == occupant.kind ])
-        # like_neighbour_count = len([loc for loc,occupant in range(len(neighbor_kinds)) if self.kind == self.world.grid[neighbor_kinds[i]].kind])
+           
+        list_all_neighbors = [occupant for loc, occupant in self.world.grid.items() if loc in neighbor_locs and occupant is not None]
+        # list_all_neighbors contains a list of non-vacant spots around the agent
+        like_neighbor_count = len([occupant for occupant in list_all_neighbors if self.kind == occupant.kind ])
+        # like_neighbor_count counts total like neighbors for the agent
         if len(list_all_neighbors) == 0:
-            return False
-        elif like_neighbour_count/len(list_all_neighbors) < self.same_pref:
+            return False # Agent with no neighbors is unhappy
+        elif like_neighbor_count/len(list_all_neighbors) < self.same_pref:
             return False
         else:
             return True
-        
-            #     for agent in self.agents:
-            # loc = self.find_vacant()
-            # self.grid[loc] = agent
-            # agent.location = loc
+    
  
                  # empties = [loc for loc, occupant in self.grid.items() if occupant is None]
+                    # type(occupant) != 'NoneType'
         
         #this should return a boolean for whether or not an agent is happy at a location
         #if loc is False, use current location, else use specified location
