@@ -93,31 +93,37 @@ class Agent():
 
     def am_i_happy(self, loc=False, neighbor_check=False):
         
-        if loc == False:
-            # happiness check for default location (current location)
-            neighbor_locs = self.world.locate_neighbors(self.location)
-        else:
-            # happiness check for specified location
-            neighbor_locs = self.world.locate_neighbors(loc)
-            
-            # neighbor_locs contains empty spots too
-           
-        list_all_neighbors = [occupant for loc, occupant in self.world.grid.items() if loc in neighbor_locs and occupant is not None]
-        # list_all_neighbors contains a list of non-vacant spots around the agent
-        like_neighbor_count = len([occupant for occupant in list_all_neighbors if self.kind == occupant.kind ])
-        # like_neighbor_count counts total like neighbors for the agent
         
-        if len(list_all_neighbors) == 0:
-            return False # Agent with no neighbors is unhappy
-        elif float(like_neighbor_count/len(list_all_neighbors)) < self.same_pref:
-            return False
-        else:
-            return True
+            if loc == False:
+                # happiness check for default location (current location)
+                neighbor_locs = self.world.locate_neighbors(self.location)
+            else:
+                # happiness check for specified location
+                neighbor_locs = self.world.locate_neighbors(loc)
+                
+                # neighbor_locs contains empty spots too
+               
+            list_all_neighbors = [occupant for loc, occupant in self.world.grid.items() if loc in neighbor_locs and occupant is not None]
+            # list_all_neighbors contains a list of non-vacant spots around the agent
+            like_neighbor_count = len([occupant for occupant in list_all_neighbors if self.kind == occupant.kind ])
+            # like_neighbor_count counts total like neighbors for the agent
+            
+            if neighbor_check == False:
+                if len(list_all_neighbors) == 0:
+                    return False # Agent with no neighbors is unhappy
+                elif float(like_neighbor_count/len(list_all_neighbors)) < self.same_pref:
+                    return False
+                else:
+                    return True
     
- 
+            elif neighbor_check == True:
+                return (len(neighbor_locs)-like_neighbor_count)
+                # returns count of different neighbors
+            
                  # empties = [loc for loc, occupant in self.grid.items() if occupant is None]
                     # type(occupant) != 'NoneType'
-        
+            else:
+                pass
         #this should return a boolean for whether or not an agent is happy at a location
         #if loc is False, use current location, else use specified location
     #for reporting purposes, allow checking of the current number of similar neighbors ?? Doubt
@@ -234,29 +240,29 @@ class World():
         neighbors = [_edge_fixer(loc) for loc in neighbors]
         return neighbors
 
-    # def report_integration(self):
-    #     diff_neighbors = []
-    #     diff_neighbours_r = []
-    #     diff_neighbours_b = []
-    #     for agent in self.agents:
-    #         diff_neighbors.append(sum(
-    #                 [not a for a in agent.am_i_happy(neighbor_check=True)]
-    #                             ))
-    #     for agent in self.agents:
-    #         if agent.kind == 'red':
-    #             diff_neighbours_r.append(sum(
-    #                 [not a for a in agent.am_i_happy(neighbor_check=True)]
-    #                             ))
-    #     for agent in self.agents:
-    #         if agent.kind == 'blue':
-    #             diff_neighbours_b.append(sum(
-    #                 [not a for a in agent.am_i_happy(neighbor_check=True)]
-    #                             ))
+    def report_integration(self):
+        diff_neighbors = []
+        diff_neighbours_r = []
+        diff_neighbours_b = []
+        for agent in self.agents:
+            diff_neighbors.append(
+                    agent.am_i_happy(neighbor_check=True)
+                                )
+        for agent in self.agents:
+            if agent.kind == 'red':
+                diff_neighbours_r.append(
+                    agent.am_i_happy(neighbor_check=True)
+                                )
+        for agent in self.agents:
+            if agent.kind == 'blue':
+                diff_neighbours_b.append(
+                    agent.am_i_happy(neighbor_check=True)
+                                )
                 
 
-    #     self.reports['integration'].append(round(mean(diff_neighbors), 2))
-    #     self.reports['red_integration'].append(round(mean(diff_neighbours_r), 2))
-    #     self.reports['blue_integration'].append(round(mean(diff_neighbours_b), 2))
+        self.reports['integration'].append(round(mean(diff_neighbors), 2))
+        self.reports['red_integration'].append(round(mean(diff_neighbours_r), 2))
+        self.reports['blue_integration'].append(round(mean(diff_neighbours_b), 2))
 
 
     def run(self): 
@@ -271,7 +277,7 @@ class World():
         log_of_stay_r = []
         log_of_stay_b = []
 
-        # self.report_integration() #commented
+        self.report_integration() #commented
         log_of_happy.append(sum([a.am_i_happy() for a in self.agents])) #starting happiness
         
         happy_results = [agent.start_happy_r_b() for agent in self.agents]
@@ -289,7 +295,7 @@ class World():
             random.shuffle(self.agents) #randomize agents before every iteration
             move_results = [agent.move() for agent in self.agents]
             
-            # self.report_integration() #commented
+            self.report_integration() #commented
 
             num_happy_at_start   =sum([r==0 for r in move_results]) + sum([r==1 for r in move_results])
             num_happy_at_start_r = sum([r==0 for r in move_results])
